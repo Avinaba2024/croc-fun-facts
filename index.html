@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crocodile Fun Facts Generator</title>
+  <style>
+    :root {
+      --main-bg: #f7fafc;
+      --main-fg: #222;
+      --accent: #4f8a8b;
+      --card-bg: #fff;
+      --card-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      --btn-bg: #4f8a8b;
+      --btn-fg: #fff;
+      --btn-hover: #395e5e;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--main-bg);
+      color: var(--main-fg);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.5s;
+    }
+    .container {
+      background: var(--card-bg);
+      box-shadow: var(--card-shadow);
+      border-radius: 18px;
+      padding: 2.5rem 2rem 2rem 2rem;
+      max-width: 420px;
+      width: 95vw;
+      text-align: center;
+      transition: background 0.5s;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      color: var(--accent);
+    }
+    .fact-container {
+      font-size: 1.2rem;
+      margin: 1.5rem 0 2rem 0;
+      min-height: 80px;
+      transition: color 0.5s;
+    }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      align-items: center;
+    }
+    button {
+      background: var(--btn-bg);
+      color: var(--btn-fg);
+      border: none;
+      border-radius: 6px;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin: 0.2rem 0;
+    }
+    button:hover {
+      background: var(--btn-hover);
+    }
+    .social-buttons {
+      display: flex;
+      gap: 0.7rem;
+      margin-top: 0.5rem;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 1.2rem 0.5rem 1.5rem 0.5rem;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      .fact-container {
+        font-size: 1rem;
+      }
+      button {
+        font-size: 0.95rem;
+        padding: 0.6rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Crocodile Fun Facts</h1>
+    <div id="fact-container" class="fact-container">Loading...</div>
+    <div class="actions">
+      <button id="generate-fact">Generate Another Fun Fact</button>
+      <div class="social-buttons">
+        <button id="share-twitter" title="Share on Twitter">🐦 Twitter</button>
+        <button id="share-linkedin" title="Share on LinkedIn">💼 LinkedIn</button>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem; font-size:0.9em; color:#888;">
+      <span>Made for GenAI 101 Workshop | <a href="https://meet.google.com/nzf-orao-mxm" target="_blank" style="color:#4f8a8b;text-decoration:none;">Learn more</a></span>
+    </div>
+  </div>
+  <script>
+    // Fun facts as per your previous messages
+    const facts = [
+      "Crocodiles have existed for over 200 million years, making them one of the few living creatures to have survived the mass extinction that wiped out the dinosaurs.",
+      "The saltwater crocodile is the largest living reptile, with some individuals growing over 23 feet (7 meters) long and weighing more than a ton.",
+      "Crocodiles can replace each of their teeth up to 50 times during their lifetime, ensuring they always have sharp teeth for hunting.",
+      "Crocodiles have a unique four-chambered heart, similar to birds and mammals, which allows for efficient oxygenation of blood and helps them stay underwater for up to an hour.",
+      "The sex of crocodile hatchlings is determined by the temperature of the nest: warmer nests produce males, while cooler nests produce females.",
+      "Crocodiles use tools! They have been observed balancing sticks on their snouts to lure birds searching for nesting materials.",
+      "Despite their tough appearance, crocodiles are highly sensitive to touch, thanks to tiny sensory pits on their jaws that detect vibrations and movement in the water.",
+      "Crocodiles communicate using a variety of sounds, including growls, hisses, and even high-pitched chirps made by hatchlings to call their mothers.",
+      "Crocodiles can swim at speeds of up to 20 miles per hour (32 kilometers per hour) by using their powerful tails to propel themselves through the water.",
+      "Some crocodile species have special salt glands in their tongues, allowing them to live in both freshwater and saltwater environments by excreting excess salt."
+    ];
+
+    // Keyword-based color themes
+    const colorThemes = [
+      { keywords: ['million', 'years', 'ancient', 'extinct', 'dinosaurs'], bg: '#f7e9d7', fg: '#5c4327', accent: '#b97a56' },
+      { keywords: ['largest', 'feet', 'meters', 'ton', 'size', 'big'], bg: '#e3f2fd', fg: '#0d47a1', accent: '#1976d2' },
+      { keywords: ['teeth', 'sharp', 'hunting', 'bite'], bg: '#fff3e0', fg: '#bf360c', accent: '#ff7043' },
+      { keywords: ['heart', 'oxygen', 'underwater', 'blood'], bg: '#e0f7fa', fg: '#006064', accent: '#26c6da' },
+      { keywords: ['temperature', 'nest', 'hatchlings', 'sex'], bg: '#fce4ec', fg: '#ad1457', accent: '#ec407a' },
+      { keywords: ['tools', 'sticks', 'branches', 'lure', 'birds'], bg: '#f1f8e9', fg: '#33691e', accent: '#8bc34a' },
+      { keywords: ['touch', 'sensitive', 'sensory', 'vibrations'], bg: '#ede7f6', fg: '#4527a0', accent: '#7e57c2' },
+      { keywords: ['communicate', 'sounds', 'growls', 'hisses', 'chirps'], bg: '#fffde7', fg: '#f9a825', accent: '#ffd600' },
+      { keywords: ['swim', 'speeds', 'tails', 'water'], bg: '#e1f5fe', fg: '#01579b', accent: '#4fc3f7' },
+      { keywords: ['salt', 'glands', 'freshwater', 'environments'], bg: '#f9fbe7', fg: '#827717', accent: '#d4e157' }
+    ];
+    // Fallback theme
+    const defaultTheme = { bg: '#f7fafc', fg: '#222', accent: '#4f8a8b' };
+
+    // DOM elements
+    const factContainer = document.getElementById('fact-container');
+    const generateFactButton = document.getElementById('generate-fact');
+    const shareTwitterButton = document.getElementById('share-twitter');
+    const shareLinkedInButton = document.getElementById('share-linkedin');
+
+    let lastFactIndex = -1;
+
+    function getRandomFactIndex() {
+      let idx;
+      do {
+        idx = Math.floor(Math.random() * facts.length);
+      } while (idx === lastFactIndex && facts.length > 1);
+      lastFactIndex = idx;
+      return idx;
+    }
+
+    function getThemeForFact(fact) {
+      for (const theme of colorThemes) {
+        for (const keyword of theme.keywords) {
+          if (fact.toLowerCase().includes(keyword)) {
+            return theme;
+          }
+        }
+      }
+      return defaultTheme;
+    }
+
+    function updateFact() {
+      const idx = getRandomFactIndex();
+      const fact = facts[idx];
+      factContainer.textContent = fact;
+      applyTheme(getThemeForFact(fact));
+    }
+
+    function applyTheme(theme) {
+      document.body.style.background = theme.bg;
+      document.body.style.color = theme.fg;
+      document.querySelector('.container').style.background = theme.bg;
+      document.querySelector('.container').style.color = theme.fg;
+      document.querySelector('h1').style.color = theme.accent;
+      factContainer.style.color = theme.fg;
+      // Button colors
+      document.querySelectorAll('button').forEach(btn => {
+        btn.style.background = theme.accent;
+        btn.style.color = '#fff';
+      });
+    }
+
+    function shareOnTwitter(fact) {
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(fact + ' #GenAIwithPieces')}`;
+      window.open(url, '_blank');
+    }
+
+    function shareOnLinkedIn(fact) {
+      // LinkedIn sharing prefers a URL, but we can share as an article with text as the title/summary
+      const shareUrl = window.location.href;
+      const url = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent('Fun Crocodile Fact')}&summary=${encodeURIComponent(fact)}`;
+      window.open(url, '_blank');
+    }
+
+    // Event listeners
+    generateFactButton.addEventListener('click', updateFact);
+    shareTwitterButton.addEventListener('click', () => shareOnTwitter(factContainer.textContent));
+    shareLinkedInButton.addEventListener('click', () => shareOnLinkedIn(factContainer.textContent));
+
+    // Initial load
+    updateFact();
+  </script>
+</body>
+</html>
